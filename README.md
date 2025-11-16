@@ -7,6 +7,33 @@
 <a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
 </p>
 
+## Sobre a API
+
+API de Inscrições e Certificados - Sistema para gerenciamento de inscrições em eventos e geração de certificados.
+
+### Porta do Servidor
+
+Esta API roda na **porta 8001** para evitar conflitos com outras APIs:
+- `eventos-api`: porta 8000
+- `inscricoes-certificados-api`: porta 8001
+
+### Como iniciar o servidor
+
+```bash
+# Usando o script composer (recomendado - sempre usa porta 8001)
+composer run serve
+
+# Ou para desenvolvimento completo (com queue, logs e vite)
+composer run dev
+
+# Ou manualmente (não recomendado - pode usar porta errada)
+php artisan serve --port=8001
+```
+
+A API estará disponível em: `http://localhost:8001`
+
+Documentação Swagger: `http://localhost:8001/api/documentation`
+
 ## About Laravel
 
 Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
