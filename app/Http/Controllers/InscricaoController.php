@@ -263,6 +263,94 @@ class InscricaoController extends Controller
     }
 
     /**
+     * Lista inscrições de um usuário específico
+     */
+    #[OA\Get(
+        path: '/api/inscricoes/usuario/{usuario_id}',
+        summary: 'Lista inscrições de um usuário',
+        tags: ['Inscrições'],
+        security: [['bearerAuth' => []]],
+        parameters: [
+            new OA\Parameter(
+                name: 'usuario_id',
+                in: 'path',
+                required: true,
+                description: 'ID do usuário',
+                schema: new OA\Schema(type: 'integer', example: 1)
+            )
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Inscrições do usuário retornadas com sucesso',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'success', type: 'boolean', example: true),
+                        new OA\Property(property: 'message', type: 'string', example: 'Inscrições do usuário listadas com sucesso!'),
+                        new OA\Property(
+                            property: 'data',
+                            type: 'array',
+                            items: new OA\Items(ref: '#/components/schemas/Inscricao')
+                        )
+                    ]
+                )
+            ),
+            new OA\Response(
+                response: 404,
+                description: 'Usuário não encontrado',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'success', type: 'boolean', example: false),
+                        new OA\Property(property: 'message', type: 'string', example: 'Usuário não encontrado.'),
+                        new OA\Property(property: 'data', type: 'null', example: null)
+                    ]
+                )
+            ),
+            new OA\Response(
+                response: 401,
+                description: 'Token de autenticação inválido ou não fornecido',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'success', type: 'boolean', example: false),
+                        new OA\Property(property: 'message', type: 'string', example: 'Token de autenticação inválido ou não fornecido.'),
+                        new OA\Property(property: 'data', type: 'null', example: null)
+                    ]
+                )
+            )
+        ]
+    )]
+    public function getByUsuario(int $usuario_id): JsonResponse
+    {
+        try {
+            // Verificar se o usuário existe
+            $usuario = DB::table('usuarios')->where('id', $usuario_id)->first();
+            
+            if (!$usuario) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Usuário não encontrado.',
+                    'data' => null
+                ], 404);
+            }
+
+            // Buscar todas as inscrições do usuário
+            $inscricoes = Inscricao::where('usuario_id', $usuario_id)->get();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Inscrições do usuário listadas com sucesso!',
+                'data' => $inscricoes
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Não foi possível listar as inscrições do usuário.',
+                'data' => null
+            ], 500);
+        }
+    }
+
+    /**
      * Remove uma inscrição
      */
     #[OA\Delete(
