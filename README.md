@@ -34,6 +34,32 @@ A API estará disponível em: `http://localhost:8001`
 
 Documentação Swagger: `http://localhost:8001/api/documentation`
 
+### Logs de Acesso
+
+A API registra automaticamente todos os acessos às rotas em arquivos de log separados:
+
+- **Logs da API**: `storage/logs/api-YYYY-MM-DD.log`
+  - Registra todas as requisições HTTP
+  - Inclui: método, URL, IP, User-Agent, token (mascarado), status code, tempo de resposta
+  - Logs são rotacionados diariamente
+  - Mantidos por 30 dias (configurável via `LOG_DAILY_DAYS`)
+
+**Informações registradas:**
+- Método HTTP (GET, POST, etc.)
+- URL completa
+- IP do cliente
+- User-Agent
+- Token de autorização (mascarado para segurança)
+- Dados do body (quando aplicável)
+- Status code da resposta
+- Tempo de resposta em milissegundos
+- Timestamp
+
+**Níveis de log:**
+- `INFO`: Requisições bem-sucedidas (2xx, 3xx)
+- `WARNING`: Erros do cliente (4xx)
+- `ERROR`: Erros do servidor (5xx)
+
 ## About Laravel
 
 Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:

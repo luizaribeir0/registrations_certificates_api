@@ -15,6 +15,11 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'auth.token' => \App\Http\Middleware\AuthenticateToken::class,
         ]);
+        
+        // Registrar middleware de logging globalmente para rotas da API
+        $middleware->api(prepend: [
+            \App\Http\Middleware\LogApiRequests::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
