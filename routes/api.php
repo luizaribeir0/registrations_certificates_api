@@ -8,5 +8,7 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth.token')->group(function () {
     Route::apiResource('inscricoes', InscricaoController::class);
     Route::post('certificados', [CertificadoController::class, 'store']);
+    Route::post('certificados/validacao', [CertificadoController::class, 'validacao']);
+    Route::get('certificados/{id}', [CertificadoController::class, 'show']);
 });
 

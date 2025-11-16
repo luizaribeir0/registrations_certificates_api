@@ -40,8 +40,96 @@
                     }
                 },
                 "responses": {
-                    "201": {
-                        "description": "Certificado criado com sucesso",
+                    "200": {
+                        "description": "Certificado criado com sucesso e arquivo .txt retornado como download",
+                        "content": {
+                            "text/plain": {
+                                "example": "CERTIFICADO DE PARTICIPAÇÃO\n\nCertificamos que\n\nNOME DO USUÁRIO\n\nparticipou do evento\n\nNOME DO EVENTO\n\nrealizado em 25/12/2024\n\nCódigo do Certificado: A1B2C3D4E5F6G7H"
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Erro de validação",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Não foi possível criar o certificado. Verifique os dados informados."
+                                        },
+                                        "data": {
+                                            "type": "null",
+                                            "example": null
+                                        },
+                                        "errors": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Token de autenticação inválido ou não fornecido",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Token de autenticação inválido ou não fornecido."
+                                        },
+                                        "data": {
+                                            "type": "null",
+                                            "example": null
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/certificados/{id}": {
+            "get": {
+                "tags": [
+                    "Certificados"
+                ],
+                "summary": "Consulta um certificado por ID",
+                "description": "Consulta um certificado por ID",
+                "operationId": "5c550f9f9dd3d0d320bab806735b6796",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID do certificado",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Certificado encontrado",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -52,14 +140,155 @@
                                         },
                                         "message": {
                                             "type": "string",
-                                            "example": "Certificado criado com sucesso!"
+                                            "example": "Certificado encontrado com sucesso!"
                                         },
                                         "data": {
-                                            "$ref": "#/components/schemas/Certificado"
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "presenca_id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "codigo": {
+                                                    "type": "string",
+                                                    "example": "71Tz2wHC6styPDY"
+                                                },
+                                                "usuario": {
+                                                    "type": "object"
+                                                },
+                                                "evento": {
+                                                    "type": "object"
+                                                },
+                                                "inscricao": {
+                                                    "type": "object"
+                                                },
+                                                "presenca": {
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Certificado não encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
                                         },
-                                        "arquivo": {
+                                        "message": {
                                             "type": "string",
-                                            "example": "certificados/certificado_1.txt"
+                                            "example": "Certificado não encontrado."
+                                        },
+                                        "data": {
+                                            "type": "null",
+                                            "example": null
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Token de autenticação inválido ou não fornecido",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Token de autenticação inválido ou não fornecido."
+                                        },
+                                        "data": {
+                                            "type": "null",
+                                            "example": null
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/certificados/validacao": {
+            "post": {
+                "tags": [
+                    "Certificados"
+                ],
+                "summary": "Valida um certificado pelo código",
+                "description": "Valida um certificado pelo código",
+                "operationId": "08f5c86b49e36344a02e60911f961445",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "codigo"
+                                ],
+                                "properties": {
+                                    "codigo": {
+                                        "type": "string",
+                                        "example": "71Tz2wHC6styPDY"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Resultado da validação. Retorna valido=true com dados do certificado se válido, ou valido=false com certificado=null se inválido.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Certificado válido."
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "valido": {
+                                                    "description": "true se o certificado for válido, false caso contrário",
+                                                    "type": "boolean",
+                                                    "example": true
+                                                },
+                                                "certificado": {
+                                                    "description": "Dados do certificado se válido, null se inválido",
+                                                    "type": "object",
+                                                    "nullable": true
+                                                }
+                                            },
+                                            "type": "object"
                                         }
                                     },
                                     "type": "object"
@@ -79,7 +308,7 @@
                                         },
                                         "message": {
                                             "type": "string",
-                                            "example": "Não foi possível criar o certificado. Verifique os dados informados."
+                                            "example": "Não foi possível validar o certificado. Verifique os dados informados."
                                         },
                                         "data": {
                                             "type": "null",
