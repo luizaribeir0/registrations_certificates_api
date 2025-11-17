@@ -95,7 +95,18 @@ Código do Certificado: A1B2C3D4E5F6G7H'
     public function store(Request $request): StreamedResponse|JsonResponse
     {
         try {
-            $validator = Validator::make($request->all(), [
+            // Garantir que estamos lendo o JSON corretamente
+            $data = $request->all();
+
+            // Se o body estiver vazio, tentar ler como JSON raw
+            if (empty($data) && $request->getContent()) {
+                $jsonData = json_decode($request->getContent(), true);
+                if (json_last_error() === JSON_ERROR_NONE) {
+                    $data = $jsonData;
+                }
+            }
+
+            $validator = Validator::make($data, [
                 'presenca_id' => 'required|integer|exists:presencas,id',
             ]);
 
@@ -104,12 +115,16 @@ Código do Certificado: A1B2C3D4E5F6G7H'
                     'success' => false,
                     'message' => 'Não foi possível criar o certificado. Verifique os dados informados.',
                     'data' => null,
-                    'errors' => $validator->errors()
+                    'errors' => $validator->errors(),
+                    'received_data' => $data // Adicionar dados recebidos para debug
                 ], 422);
             }
 
+            // Usar os dados validados
+            $presencaId = $data['presenca_id'];
+
             // Verificar se já existe um certificado para esta presença
-            $certificadoExistente = Certificado::where('presenca_id', $request->presenca_id)->first();
+            $certificadoExistente = Certificado::where('presenca_id', $presencaId)->first();
 
             if ($certificadoExistente) {
                 return response()->json([
@@ -121,7 +136,7 @@ Código do Certificado: A1B2C3D4E5F6G7H'
 
             // Buscar dados da presença, inscrição, evento e usuário
             $presenca = DB::table('presencas')
-                ->where('id', $request->presenca_id)
+                ->where('id', $presencaId)
                 ->first();
 
             if (!$presenca) {
@@ -178,7 +193,7 @@ Código do Certificado: A1B2C3D4E5F6G7H'
 
             // Criar certificado
             $certificado = Certificado::create([
-                'presenca_id' => $request->presenca_id,
+                'presenca_id' => $presencaId,
                 'codigo' => $codigo,
             ]);
 
