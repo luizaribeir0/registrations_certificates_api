@@ -31,7 +31,18 @@ class InscricaoController extends Controller
                         new OA\Property(
                             property: 'data',
                             type: 'array',
-                            items: new OA\Items(ref: '#/components/schemas/Inscricao')
+                            items: new OA\Items(
+                                type: 'object',
+                                properties: [
+                                    new OA\Property(property: 'id', type: 'integer', example: 1),
+                                    new OA\Property(property: 'evento_id', type: 'integer', example: 1),
+                                    new OA\Property(property: 'usuario_id', type: 'integer', example: 1),
+                                    new OA\Property(property: 'created_at', type: 'string', format: 'date-time', nullable: true, example: '2024-01-01 10:00:00'),
+                                    new OA\Property(property: 'updated_at', type: 'string', format: 'date-time', nullable: true, example: '2024-01-01 10:00:00'),
+                                    new OA\Property(property: 'nome_evento', type: 'string', example: 'Workshop de Laravel'),
+                                    new OA\Property(property: 'email_usuario', type: 'string', format: 'email', example: 'usuario@example.com')
+                                ]
+                            )
                         )
                     ]
                 )
@@ -52,7 +63,18 @@ class InscricaoController extends Controller
     public function index(): JsonResponse
     {
         try {
-            $inscricoes = Inscricao::whereNotIn('id', DB::table('presencas')->pluck('inscricao_id'))->get();
+            $inscricoesIds = DB::table('presencas')->pluck('inscricao_id');
+
+            $inscricoes = DB::table('inscricoes')
+                ->leftJoin('eventos', 'inscricoes.evento_id', '=', 'eventos.id')
+                ->leftJoin('usuarios', 'inscricoes.usuario_id', '=', 'usuarios.id')
+                ->whereNotIn('inscricoes.id', $inscricoesIds)
+                ->select(
+                    'inscricoes.*',
+                    'eventos.descricao as nome_evento',
+                    'usuarios.email as email_usuario'
+                )
+                ->get();
 
             return response()->json([
                 'success' => true,
