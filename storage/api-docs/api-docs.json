@@ -41,10 +41,60 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Certificado criado com sucesso e arquivo .txt retornado como download",
+                        "description": "Certificado criado com sucesso. Retorna JSON com o conteúdo do certificado para download instantâneo.",
                         "content": {
-                            "text/plain": {
-                                "example": "CERTIFICADO DE PARTICIPAÇÃO\n\nCertificamos que\n\nNOME DO USUÁRIO\n\nparticipou do evento\n\nNOME DO EVENTO\n\nrealizado em 25/12/2024\n\nCódigo do Certificado: A1B2C3D4E5F6G7H"
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Certificado criado com sucesso!"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "certificado": {
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "integer",
+                                                            "example": 1
+                                                        },
+                                                        "presenca_id": {
+                                                            "type": "integer",
+                                                            "example": 1
+                                                        },
+                                                        "codigo": {
+                                                            "type": "string",
+                                                            "example": "Yg5qkoYNl7cNaXy"
+                                                        },
+                                                        "created_at": {
+                                                            "type": "string",
+                                                            "format": "date-time"
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                },
+                                                "conteudo": {
+                                                    "type": "string",
+                                                    "example": "CERTIFICADO DE PARTICIPAÇÃO\\n\\nCertificamos que\\n\\nNOME DO USUÁRIO\\n\\nparticipou do evento\\n\\nNOME DO EVENTO\\n\\nrealizado em 25/12/2024\\n\\nCódigo do Certificado: A1B2C3D4E5F6G7H"
+                                                },
+                                                "nome_arquivo": {
+                                                    "type": "string",
+                                                    "example": "certificado_1.txt"
+                                                },
+                                                "tipo": {
+                                                    "type": "string",
+                                                    "example": "text/plain"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
                             }
                         }
                     },
@@ -360,12 +410,12 @@
                 "tags": [
                     "Inscrições"
                 ],
-                "summary": "Lista todas as inscrições",
-                "description": "Lista todas as inscrições",
+                "summary": "Lista inscrições sem presença registrada",
+                "description": "Retorna todas as inscrições que não possuem presença registrada na tabela de presenças",
                 "operationId": "eb9c0b757168868dc0d0324621aa47df",
                 "responses": {
                     "200": {
-                        "description": "Lista de inscrições retornada com sucesso",
+                        "description": "Lista de inscrições sem presença registrada retornada com sucesso",
                         "content": {
                             "application/json": {
                                 "schema": {

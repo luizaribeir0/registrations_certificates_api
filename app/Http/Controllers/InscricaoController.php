@@ -12,17 +12,18 @@ use OpenApi\Attributes as OA;
 class InscricaoController extends Controller
 {
     /**
-     * Lista todas as inscrições
+     * Lista todas as inscrições sem presença registrada
      */
     #[OA\Get(
         path: '/api/inscricoes',
-        summary: 'Lista todas as inscrições',
+        summary: 'Lista inscrições sem presença registrada',
+        description: 'Retorna todas as inscrições que não possuem presença registrada na tabela de presenças',
         tags: ['Inscrições'],
         security: [['bearerAuth' => []]],
         responses: [
             new OA\Response(
                 response: 200,
-                description: 'Lista de inscrições retornada com sucesso',
+                description: 'Lista de inscrições sem presença registrada retornada com sucesso',
                 content: new OA\JsonContent(
                     properties: [
                         new OA\Property(property: 'success', type: 'boolean', example: true),
@@ -51,7 +52,7 @@ class InscricaoController extends Controller
     public function index(): JsonResponse
     {
         try {
-            $inscricoes = Inscricao::all();
+            $inscricoes = Inscricao::whereNotIn('id', DB::table('presencas')->pluck('inscricao_id'))->get();
 
             return response()->json([
                 'success' => true,
@@ -141,7 +142,7 @@ class InscricaoController extends Controller
 
             // Verificar se o evento está cancelado
             $evento = DB::table('eventos')->where('id', $request->evento_id)->first();
-            
+
             if ($evento && $evento->cancelado != 0) {
                 return response()->json([
                     'success' => false,
@@ -324,7 +325,7 @@ class InscricaoController extends Controller
         try {
             // Verificar se o usuário existe
             $usuario = DB::table('usuarios')->where('id', $usuario_id)->first();
-            
+
             if (!$usuario) {
                 return response()->json([
                     'success' => false,
