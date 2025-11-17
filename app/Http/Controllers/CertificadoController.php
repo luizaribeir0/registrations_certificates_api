@@ -5,11 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Certificado;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 use OpenApi\Attributes as OA;
 
 class CertificadoController extends Controller
@@ -49,22 +47,31 @@ class CertificadoController extends Controller
         responses: [
             new OA\Response(
                 response: 200,
-                description: 'Certificado criado com sucesso e arquivo .txt retornado como download',
-                content: new OA\MediaType(
-                    mediaType: 'text/plain',
-                    example: 'CERTIFICADO DE PARTICIPAÇÃO
-
-Certificamos que
-
-NOME DO USUÁRIO
-
-participou do evento
-
-NOME DO EVENTO
-
-realizado em 25/12/2024
-
-Código do Certificado: A1B2C3D4E5F6G7H'
+                description: 'Certificado criado com sucesso. Retorna JSON com o conteúdo do certificado para download instantâneo.',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'success', type: 'boolean', example: true),
+                        new OA\Property(property: 'message', type: 'string', example: 'Certificado criado com sucesso!'),
+                        new OA\Property(
+                            property: 'data',
+                            type: 'object',
+                            properties: [
+                                new OA\Property(
+                                    property: 'certificado',
+                                    type: 'object',
+                                    properties: [
+                                        new OA\Property(property: 'id', type: 'integer', example: 1),
+                                        new OA\Property(property: 'presenca_id', type: 'integer', example: 1),
+                                        new OA\Property(property: 'codigo', type: 'string', example: 'Yg5qkoYNl7cNaXy'),
+                                        new OA\Property(property: 'created_at', type: 'string', format: 'date-time')
+                                    ]
+                                ),
+                                new OA\Property(property: 'conteudo', type: 'string', example: 'CERTIFICADO DE PARTICIPAÇÃO\n\nCertificamos que\n\nNOME DO USUÁRIO\n\nparticipou do evento\n\nNOME DO EVENTO\n\nrealizado em 25/12/2024\n\nCódigo do Certificado: A1B2C3D4E5F6G7H'),
+                                new OA\Property(property: 'nome_arquivo', type: 'string', example: 'certificado_1.txt'),
+                                new OA\Property(property: 'tipo', type: 'string', example: 'text/plain')
+                            ]
+                        )
+                    ]
                 )
             ),
             new OA\Response(
@@ -92,7 +99,7 @@ Código do Certificado: A1B2C3D4E5F6G7H'
             )
         ]
     )]
-    public function store(Request $request): StreamedResponse|JsonResponse
+    public function store(Request $request): JsonResponse
     {
         try {
             // Garantir que estamos lendo o JSON corretamente
@@ -209,12 +216,22 @@ Código do Certificado: A1B2C3D4E5F6G7H'
             // Nome do arquivo para download
             $nomeArquivo = 'certificado_' . $certificado->id . '.txt';
 
-            // Retornar o conteúdo diretamente como download usando streamDownload, sem salvar em storage
-            return response()->streamDownload(function () use ($conteudo) {
-                echo $conteudo;
-            }, $nomeArquivo, [
-                'Content-Type' => 'text/plain; charset=utf-8',
-            ]);
+            // Retornar JSON com o conteúdo do certificado para download instantâneo pelo frontend
+            return response()->json([
+                'success' => true,
+                'message' => 'Certificado criado com sucesso!',
+                'data' => [
+                    'certificado' => [
+                        'id' => $certificado->id,
+                        'presenca_id' => $certificado->presenca_id,
+                        'codigo' => $certificado->codigo,
+                        'created_at' => $certificado->created_at,
+                    ],
+                    'conteudo' => $conteudo,
+                    'nome_arquivo' => $nomeArquivo,
+                    'tipo' => 'text/plain'
+                ]
+            ], 200);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
