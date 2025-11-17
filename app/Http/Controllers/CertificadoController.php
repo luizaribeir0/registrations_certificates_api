@@ -9,6 +9,7 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use OpenApi\Attributes as OA;
 
 class CertificadoController extends Controller
@@ -91,7 +92,7 @@ Código do Certificado: A1B2C3D4E5F6G7H'
             )
         ]
     )]
-    public function store(Request $request): Response|JsonResponse
+    public function store(Request $request): StreamedResponse|JsonResponse
     {
         try {
             $validator = Validator::make($request->all(), [
@@ -193,10 +194,12 @@ Código do Certificado: A1B2C3D4E5F6G7H'
             // Nome do arquivo para download
             $nomeArquivo = 'certificado_' . $certificado->id . '.txt';
 
-            // Retornar o conteúdo diretamente como download, sem salvar em storage
-            return response($conteudo, 200)
-                ->header('Content-Type', 'text/plain; charset=utf-8')
-                ->header('Content-Disposition', 'attachment; filename="' . $nomeArquivo . '"');
+            // Retornar o conteúdo diretamente como download usando streamDownload, sem salvar em storage
+            return response()->streamDownload(function () use ($conteudo) {
+                echo $conteudo;
+            }, $nomeArquivo, [
+                'Content-Type' => 'text/plain; charset=utf-8',
+            ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
