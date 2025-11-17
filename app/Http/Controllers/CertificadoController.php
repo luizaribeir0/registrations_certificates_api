@@ -5,10 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Certificado;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use OpenApi\Attributes as OA;
 
 class CertificadoController extends Controller
@@ -20,11 +20,11 @@ class CertificadoController extends Controller
     {
         $caracteres = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
         $codigo = '';
-        
+
         for ($i = 0; $i < 15; $i++) {
             $codigo .= $caracteres[random_int(0, strlen($caracteres) - 1)];
         }
-        
+
         return $codigo;
     }
 
@@ -91,7 +91,7 @@ Código do Certificado: A1B2C3D4E5F6G7H'
             )
         ]
     )]
-    public function store(Request $request): BinaryFileResponse|JsonResponse
+    public function store(Request $request): Response|JsonResponse
     {
         try {
             $validator = Validator::make($request->all(), [
@@ -169,7 +169,7 @@ Código do Certificado: A1B2C3D4E5F6G7H'
 
             // Gerar código único
             $codigo = $this->gerarCodigo();
-            
+
             // Garantir que o código seja único
             while (Certificado::where('codigo', $codigo)->exists()) {
                 $codigo = $this->gerarCodigo();
@@ -190,22 +190,13 @@ Código do Certificado: A1B2C3D4E5F6G7H'
             $conteudo .= "realizado em " . date('d/m/Y', strtotime($evento->data_final)) . "\n\n";
             $conteudo .= "Código do Certificado: " . $codigo . "\n";
 
-            // Criar diretório se não existir
-            $diretorio = storage_path('app/public/certificados');
-            if (!file_exists($diretorio)) {
-                mkdir($diretorio, 0755, true);
-            }
-
-            // Salvar arquivo .txt
+            // Nome do arquivo para download
             $nomeArquivo = 'certificado_' . $certificado->id . '.txt';
-            $caminhoArquivo = storage_path('app/public/certificados/' . $nomeArquivo);
-            file_put_contents($caminhoArquivo, $conteudo);
 
-            // Retornar o arquivo como download com headers apropriados
-            return response()->download($caminhoArquivo, $nomeArquivo, [
-                'Content-Type' => 'text/plain; charset=utf-8',
-                'Content-Disposition' => 'attachment; filename="' . $nomeArquivo . '"',
-            ])->deleteFileAfterSend(false);
+            // Retornar o conteúdo diretamente como download, sem salvar em storage
+            return response($conteudo, 200)
+                ->header('Content-Type', 'text/plain; charset=utf-8')
+                ->header('Content-Disposition', 'attachment; filename="' . $nomeArquivo . '"');
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
