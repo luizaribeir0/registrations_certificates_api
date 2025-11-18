@@ -313,7 +313,18 @@ class InscricaoController extends Controller
                         new OA\Property(
                             property: 'data',
                             type: 'array',
-                            items: new OA\Items(ref: '#/components/schemas/Inscricao')
+                            items: new OA\Items(
+                                type: 'object',
+                                properties: [
+                                    new OA\Property(property: 'id', type: 'integer', example: 1),
+                                    new OA\Property(property: 'evento_id', type: 'integer', example: 1),
+                                    new OA\Property(property: 'usuario_id', type: 'integer', example: 1),
+                                    new OA\Property(property: 'created_at', type: 'string', format: 'date-time', nullable: true, example: '2024-01-01 10:00:00'),
+                                    new OA\Property(property: 'updated_at', type: 'string', format: 'date-time', nullable: true, example: '2024-01-01 10:00:00'),
+                                    new OA\Property(property: 'tem_presenca', type: 'boolean', example: true, description: 'true se tem presença registrada, false caso contrário'),
+                                    new OA\Property(property: 'tem_certificado', type: 'boolean', example: true, description: 'true se tem certificado gerado, false caso contrário')
+                                ]
+                            )
                         )
                     ]
                 )
@@ -356,8 +367,24 @@ class InscricaoController extends Controller
                 ], 404);
             }
 
-            // Buscar todas as inscrições do usuário
-            $inscricoes = Inscricao::where('usuario_id', $usuario_id)->get();
+            // Buscar todas as inscrições do usuário com informações de presença e certificado
+            $inscricoes = DB::table('inscricoes')
+                ->leftJoin('presencas', 'inscricoes.id', '=', 'presencas.inscricao_id')
+                ->leftJoin('certificados', 'presencas.id', '=', 'certificados.presenca_id')
+                ->where('inscricoes.usuario_id', $usuario_id)
+                ->select(
+                    'inscricoes.*',
+                    DB::raw('CASE WHEN presencas.id IS NOT NULL THEN 1 ELSE 0 END as tem_presenca'),
+                    DB::raw('CASE WHEN certificados.id IS NOT NULL THEN 1 ELSE 0 END as tem_certificado')
+                )
+                ->get();
+
+            // Converter os campos para booleanos
+            $inscricoes = $inscricoes->map(function ($inscricao) {
+                $inscricao->tem_presenca = (bool) $inscricao->tem_presenca;
+                $inscricao->tem_certificado = (bool) $inscricao->tem_certificado;
+                return $inscricao;
+            });
 
             return response()->json([
                 'success' => true,
