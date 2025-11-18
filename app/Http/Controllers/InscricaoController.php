@@ -321,6 +321,7 @@ class InscricaoController extends Controller
                                     new OA\Property(property: 'usuario_id', type: 'integer', example: 1),
                                     new OA\Property(property: 'created_at', type: 'string', format: 'date-time', nullable: true, example: '2024-01-01 10:00:00'),
                                     new OA\Property(property: 'updated_at', type: 'string', format: 'date-time', nullable: true, example: '2024-01-01 10:00:00'),
+                                    new OA\Property(property: 'presenca_id', type: 'integer', nullable: true, example: 1, description: 'ID da presença registrada, null se não houver presença'),
                                     new OA\Property(property: 'tem_presenca', type: 'boolean', example: true, description: 'true se tem presença registrada, false caso contrário'),
                                     new OA\Property(property: 'tem_certificado', type: 'boolean', example: true, description: 'true se tem certificado gerado, false caso contrário')
                                 ]
@@ -374,15 +375,18 @@ class InscricaoController extends Controller
                 ->where('inscricoes.usuario_id', $usuario_id)
                 ->select(
                     'inscricoes.*',
+                    'presencas.id as presenca_id',
                     DB::raw('CASE WHEN presencas.id IS NOT NULL THEN 1 ELSE 0 END as tem_presenca'),
                     DB::raw('CASE WHEN certificados.id IS NOT NULL THEN 1 ELSE 0 END as tem_certificado')
                 )
                 ->get();
 
-            // Converter os campos para booleanos
+            // Converter os campos para booleanos e ajustar presenca_id
             $inscricoes = $inscricoes->map(function ($inscricao) {
                 $inscricao->tem_presenca = (bool) $inscricao->tem_presenca;
                 $inscricao->tem_certificado = (bool) $inscricao->tem_certificado;
+                // Se não tiver presença, presenca_id será null
+                $inscricao->presenca_id = $inscricao->presenca_id ?? null;
                 return $inscricao;
             });
 
