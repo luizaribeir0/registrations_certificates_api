@@ -41,7 +41,7 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Certificado criado com sucesso. Retorna JSON com o conteúdo do certificado para download instantâneo.",
+                        "description": "Certificado criado com sucesso. Retorna JSON com o conteúdo do certificado em PDF (base64) para download instantâneo.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -70,6 +70,10 @@
                                                             "type": "string",
                                                             "example": "Yg5qkoYNl7cNaXy"
                                                         },
+                                                        "link_validacao": {
+                                                            "type": "string",
+                                                            "example": "http://177.44.248.78:8001/api/certificados/validacao"
+                                                        },
                                                         "created_at": {
                                                             "type": "string",
                                                             "format": "date-time"
@@ -78,16 +82,17 @@
                                                     "type": "object"
                                                 },
                                                 "conteudo": {
+                                                    "description": "Conteúdo do PDF em base64",
                                                     "type": "string",
-                                                    "example": "CERTIFICADO DE PARTICIPAÇÃO\\n\\nCertificamos que\\n\\nNOME DO USUÁRIO\\n\\nparticipou do evento\\n\\nNOME DO EVENTO\\n\\nrealizado em 25/12/2024\\n\\nCódigo do Certificado: A1B2C3D4E5F6G7H"
+                                                    "example": "JVBERi0xLjQKJeLjz9MKMy..."
                                                 },
                                                 "nome_arquivo": {
                                                     "type": "string",
-                                                    "example": "certificado_1.txt"
+                                                    "example": "certificado_1.pdf"
                                                 },
                                                 "tipo": {
                                                     "type": "string",
-                                                    "example": "text/plain"
+                                                    "example": "application/pdf"
                                                 }
                                             },
                                             "type": "object"

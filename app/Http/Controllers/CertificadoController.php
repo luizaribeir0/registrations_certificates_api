@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Certificado;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -47,7 +48,7 @@ class CertificadoController extends Controller
         responses: [
             new OA\Response(
                 response: 200,
-                description: 'Certificado criado com sucesso. Retorna JSON com o conteúdo do certificado para download instantâneo.',
+                description: 'Certificado criado com sucesso. Retorna JSON com o conteúdo do certificado em PDF (base64) para download instantâneo.',
                 content: new OA\JsonContent(
                     properties: [
                         new OA\Property(property: 'success', type: 'boolean', example: true),
@@ -63,12 +64,13 @@ class CertificadoController extends Controller
                                         new OA\Property(property: 'id', type: 'integer', example: 1),
                                         new OA\Property(property: 'presenca_id', type: 'integer', example: 1),
                                         new OA\Property(property: 'codigo', type: 'string', example: 'Yg5qkoYNl7cNaXy'),
+                                        new OA\Property(property: 'link_validacao', type: 'string', example: 'http://177.44.248.78:8001/api/certificados/validacao'),
                                         new OA\Property(property: 'created_at', type: 'string', format: 'date-time')
                                     ]
                                 ),
-                                new OA\Property(property: 'conteudo', type: 'string', example: 'CERTIFICADO DE PARTICIPAÇÃO\n\nCertificamos que\n\nNOME DO USUÁRIO\n\nparticipou do evento\n\nNOME DO EVENTO\n\nrealizado em 25/12/2024\n\nCódigo do Certificado: A1B2C3D4E5F6G7H'),
-                                new OA\Property(property: 'nome_arquivo', type: 'string', example: 'certificado_1.txt'),
-                                new OA\Property(property: 'tipo', type: 'string', example: 'text/plain')
+                                new OA\Property(property: 'conteudo', type: 'string', description: 'Conteúdo do PDF em base64', example: 'JVBERi0xLjQKJeLjz9MKMy...'),
+                                new OA\Property(property: 'nome_arquivo', type: 'string', example: 'certificado_1.pdf'),
+                                new OA\Property(property: 'tipo', type: 'string', example: 'application/pdf')
                             ]
                         )
                     ]
@@ -204,17 +206,22 @@ class CertificadoController extends Controller
                 'codigo' => $codigo,
             ]);
 
-            // Criar conteúdo do arquivo .txt
-            $conteudo = "CERTIFICADO DE PARTICIPAÇÃO\n\n";
-            $conteudo .= "Certificamos que\n\n";
-            $conteudo .= strtoupper($usuario->nome) . "\n\n";
-            $conteudo .= "participou do evento\n\n";
-            $conteudo .= strtoupper($evento->descricao) . "\n\n";
-            $conteudo .= "realizado em " . date('d/m/Y', strtotime($evento->data_final)) . "\n\n";
-            $conteudo .= "Código do Certificado: " . $codigo . "\n";
+            // Link de validação
+            $linkValidacao = 'http://177.44.248.78:8001/api/certificados/validacao';
+
+            // Gerar PDF do certificado
+            $pdf = Pdf::loadView('certificado', [
+                'usuario' => $usuario,
+                'evento' => $evento,
+                'codigo' => $codigo,
+                'linkValidacao' => $linkValidacao
+            ])->setPaper('a4', 'landscape');
+
+            // Converter PDF para base64
+            $pdfBase64 = base64_encode($pdf->output());
 
             // Nome do arquivo para download
-            $nomeArquivo = 'certificado_' . $certificado->id . '.txt';
+            $nomeArquivo = 'certificado_' . $certificado->id . '.pdf';
 
             // Retornar JSON com o conteúdo do certificado para download instantâneo pelo frontend
             return response()->json([
@@ -225,11 +232,12 @@ class CertificadoController extends Controller
                         'id' => $certificado->id,
                         'presenca_id' => $certificado->presenca_id,
                         'codigo' => $certificado->codigo,
+                        'link_validacao' => $linkValidacao,
                         'created_at' => $certificado->created_at,
                     ],
-                    'conteudo' => $conteudo,
+                    'conteudo' => $pdfBase64,
                     'nome_arquivo' => $nomeArquivo,
-                    'tipo' => 'text/plain'
+                    'tipo' => 'application/pdf'
                 ]
             ], 200);
         } catch (\Exception $e) {
