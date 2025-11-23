@@ -78,7 +78,7 @@ class CertificadoController extends Controller
             )
         ]
     )]
-    public function store(Request $request): Response|JsonResponse
+    public function store(Request $request)
     {
         try {
             // Garantir que estamos lendo o JSON corretamente
