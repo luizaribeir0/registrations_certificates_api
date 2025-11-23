@@ -14,6 +14,5 @@ Route::middleware('auth.token')->group(function () {
     Route::get('inscricoes/usuario/{usuario_id}', [InscricaoController::class, 'getByUsuario']);
     Route::post('certificados', [CertificadoController::class, 'store']);
     Route::get('certificados/{id}', [CertificadoController::class, 'show']);
-    Route::get('certificados/{id}/download', [CertificadoController::class, 'download']);
 });
 
