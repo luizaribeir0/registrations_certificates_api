@@ -466,17 +466,6 @@ class CertificadoController extends Controller
                         new OA\Property(property: 'errors', type: 'object')
                     ]
                 )
-            ),
-            new OA\Response(
-                response: 401,
-                description: 'Token de autenticação inválido ou não fornecido',
-                content: new OA\JsonContent(
-                    properties: [
-                        new OA\Property(property: 'success', type: 'boolean', example: false),
-                        new OA\Property(property: 'message', type: 'string', example: 'Token de autenticação inválido ou não fornecido.'),
-                        new OA\Property(property: 'data', type: 'null', example: null)
-                    ]
-                )
             )
         ]
     )]

@@ -377,30 +377,6 @@
                                 }
                             }
                         }
-                    },
-                    "401": {
-                        "description": "Token de autenticação inválido ou não fornecido",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean",
-                                            "example": false
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Token de autenticação inválido ou não fornecido."
-                                        },
-                                        "data": {
-                                            "type": "null",
-                                            "example": null
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
                     }
                 }
             }
