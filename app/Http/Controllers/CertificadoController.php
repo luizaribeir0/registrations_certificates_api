@@ -48,9 +48,32 @@ class CertificadoController extends Controller
         responses: [
             new OA\Response(
                 response: 200,
-                description: 'Certificado criado com sucesso. Retorna o PDF do certificado para download automático.',
-                content: new OA\MediaType(
-                    mediaType: 'application/pdf'
+                description: 'Certificado criado com sucesso. Retorna JSON com o conteúdo do certificado em PDF (base64) para download instantâneo.',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'success', type: 'boolean', example: true),
+                        new OA\Property(property: 'message', type: 'string', example: 'Certificado criado com sucesso!'),
+                        new OA\Property(
+                            property: 'data',
+                            type: 'object',
+                            properties: [
+                                new OA\Property(
+                                    property: 'certificado',
+                                    type: 'object',
+                                    properties: [
+                                        new OA\Property(property: 'id', type: 'integer', example: 1),
+                                        new OA\Property(property: 'presenca_id', type: 'integer', example: 1),
+                                        new OA\Property(property: 'codigo', type: 'string', example: 'Yg5qkoYNl7cNaXy'),
+                                        new OA\Property(property: 'link_validacao', type: 'string', example: 'http://177.44.248.78:8001/api/certificados/validacao'),
+                                        new OA\Property(property: 'created_at', type: 'string', format: 'date-time')
+                                    ]
+                                ),
+                                new OA\Property(property: 'conteudo', type: 'string', description: 'Conteúdo do PDF em base64', example: 'JVBERi0xLjQKJeLjz9MKMy...'),
+                                new OA\Property(property: 'nome_arquivo', type: 'string', example: 'certificado_1.pdf'),
+                                new OA\Property(property: 'tipo', type: 'string', example: 'application/pdf')
+                            ]
+                        )
+                    ]
                 )
             ),
             new OA\Response(
@@ -78,7 +101,7 @@ class CertificadoController extends Controller
             )
         ]
     )]
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
         try {
             // Garantir que estamos lendo o JSON corretamente
@@ -194,11 +217,29 @@ class CertificadoController extends Controller
                 'linkValidacao' => $linkValidacao
             ])->setPaper('a4', 'landscape');
 
+            // Converter PDF para base64
+            $pdfBase64 = base64_encode($pdf->output());
+
             // Nome do arquivo para download
             $nomeArquivo = 'certificado_' . $certificado->id . '.pdf';
 
-            // Retornar PDF diretamente para download automático
-            return $pdf->download($nomeArquivo);
+            // Retornar JSON com o conteúdo do certificado para download automático pelo frontend
+            return response()->json([
+                'success' => true,
+                'message' => 'Certificado criado com sucesso!',
+                'data' => [
+                    'certificado' => [
+                        'id' => $certificado->id,
+                        'presenca_id' => $certificado->presenca_id,
+                        'codigo' => $certificado->codigo,
+                        'link_validacao' => $linkValidacao,
+                        'created_at' => $certificado->created_at,
+                    ],
+                    'conteudo' => $pdfBase64,
+                    'nome_arquivo' => $nomeArquivo,
+                    'tipo' => 'application/pdf'
+                ]
+            ], 200);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
