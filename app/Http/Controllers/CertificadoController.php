@@ -6,8 +6,8 @@ use App\Models\Certificado;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use OpenApi\Attributes as OA;
 
@@ -78,7 +78,7 @@ class CertificadoController extends Controller
             )
         ]
     )]
-    public function store(Request $request): JsonResponse
+    public function store(Request $request): Response|JsonResponse
     {
         try {
             // Garantir que estamos lendo o JSON corretamente
