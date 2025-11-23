@@ -15,6 +15,11 @@ class AuthenticateToken
      */
     public function handle(Request $request, Closure $next): Response
     {
+        // Permitir acesso à rota de validação de certificado sem autenticação
+        if ($request->is('api/certificados/validacao') && $request->isMethod('POST')) {
+            return $next($request);
+        }
+
         $token = $request->header('Authorization');
 
         if (!$token) {
