@@ -419,7 +419,6 @@ class CertificadoController extends Controller
         path: '/api/certificados/validacao',
         summary: 'Valida um certificado pelo código',
         tags: ['Certificados'],
-        security: [['bearerAuth' => []]],
         requestBody: new OA\RequestBody(
             required: true,
             content: new OA\JsonContent(
