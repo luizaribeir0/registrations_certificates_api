@@ -64,7 +64,7 @@ class CertificadoController extends Controller
                                         new OA\Property(property: 'id', type: 'integer', example: 1),
                                         new OA\Property(property: 'presenca_id', type: 'integer', example: 1),
                                         new OA\Property(property: 'codigo', type: 'string', example: 'Yg5qkoYNl7cNaXy'),
-                                        new OA\Property(property: 'link_validacao', type: 'string', example: 'http://177.44.248.78:8001/api/certificados/validacao'),
+                                        new OA\Property(property: 'link_validacao', type: 'string', example: 'http://177.44.248.78:5173/validar-certificado'),
                                         new OA\Property(property: 'created_at', type: 'string', format: 'date-time')
                                     ]
                                 ),
@@ -207,7 +207,7 @@ class CertificadoController extends Controller
             ]);
 
             // Link de validação
-            $linkValidacao = 'http://177.44.248.78:8001/api/certificados/validacao';
+            $linkValidacao = 'http://177.44.248.78:5173/validar-certificado';
 
             // Gerar PDF do certificado
             $pdf = Pdf::loadView('certificado', [
